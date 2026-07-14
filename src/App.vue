@@ -2,6 +2,101 @@
   <div class="app">
     <h1>⚖️ Weighted <span>Overtime</span> Calculator</h1>
     <p class="subtitle">FLSA regular-rate overtime: all earnings ÷ all hours = regular rate. Half of regular rate × OT hours = OT premium.</p>
+    <button class="btn btn-secondary explainer-toggle" @click="showExplainer = !showExplainer">
+      {{ showExplainer ? '✕ Hide' : 'ℹ️ How It Works — FLSA Weighted OT' }}
+    </button>
+
+    <!-- Explainer -->
+    <div class="card explainer" v-if="showExplainer">
+      <h2><span class="icon">📖</span> FLSA Weighted Overtime Explainer</h2>
+
+      <div class="explainer-section">
+        <h3>What is the Regular Rate of Pay?</h3>
+        <p>Under the Fair Labor Standards Act (FLSA), when an employee works at <strong>two or more different pay rates</strong> in the same workweek, their overtime must be calculated using a <strong>weighted average</strong> regular rate — not just one of the individual rates.</p>
+        <p>The regular rate includes <strong>all non-discretionary compensation</strong>: straight-time pay at each rate, non-discretionary bonuses, and shift differentials. <strong>Tips and discretionary bonuses are excluded</strong>.</p>
+      </div>
+
+      <div class="explainer-section">
+        <h3>The Calculation Steps</h3>
+        <ol>
+          <li><strong>Straight-time earnings:</strong> Multiply all hours worked (straight + OT) by each base rate.</li>
+          <li><strong>Add non-discretionary compensation:</strong> Include non-discretionary bonuses and shift differentials.</li>
+          <li><strong>Regular Rate:</strong> Divide total earnings by total hours worked.</li>
+          <li><strong>OT Premium:</strong> Multiply (regular rate ÷ 2) by the number of OT hours.</li>
+          <li><strong>Add discretionary items:</strong> Tips and discretionary bonuses are added after OT is calculated.</li>
+        </ol>
+      </div>
+
+      <div class="explainer-section">
+        <h3>Minimum Wage Consideration</h3>
+        <p>When an employee's base rate is <strong>below the applicable minimum wage</strong> (federal or state), the minimum wage rate is used in place of the lower base rate when computing the regular rate for OT purposes. The employee still receives their actual lower cash rate for straight-time pay, but the OT premium is calculated using the adjusted (higher) regular rate.</p>
+      </div>
+
+      <div class="explainer-section">
+        <h3>Example</h3>
+        <div class="explainer-example">
+          <p>Employee works 34 hours at $5.15/hr and 10 hours at $10.00/hr, with 4 of those 10 hours as OT. Minimum wage is $7.25.</p>
+          <ul>
+            <li>Straight-time earnings at min wage: (34h × $7.25) + (10h × $10.00) = <strong>$346.50</strong></li>
+            <li>Regular Rate: $346.50 ÷ 44h = <strong>$7.875/hr</strong></li>
+            <li>OT Premium: $7.875 ÷ 2 × 4h = <strong>$15.75</strong></li>
+            <li><strong>Total Pay:</strong> $275.10 (actual cash) + $15.75 (OT premium) = <strong>$290.85</strong></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="explainer-section">
+        <h3>Key Terms</h3>
+        <dl>
+          <dt><strong>Regular Rate</strong></dt>
+          <dd>The weighted average hourly rate used for OT calculation. Includes all non-discretionary compensation.</dd>
+          <dt><strong>Half-Time Premium</strong></dt>
+          <dd>Since straight-time hours are already paid at their base rate, OT is only the extra half (0.5×), not 1.5× the full rate.</dd>
+          <dt><strong>Non-Discretionary Bonus</strong></dt>
+          <dd>A bonus tied to hours worked, production, or efficiency. Must be included in the regular rate.</dd>
+          <dt><strong>Discretionary Bonus</strong></dt>
+          <dd>A bonus not tied to any objective standard, given at the employer's sole discretion. Excluded from the regular rate.</dd>
+          <dt><strong>Tip</strong></dt>
+          <dd>Gratuities received by the employee. Excluded from the regular rate under FLSA.</dd>
+        </dl>
+      </div>
+
+      <div class="explainer-section">
+        <h3>Official Resources</h3>
+        <ul class="resource-links">
+          <li>
+            <a href="https://www.dol.gov/agencies/whd/fact-sheets/23f-overtime-flsa" target="_blank" rel="noopener">
+              DOL Fact Sheet #23F — Overtime Pay Requirements Under FLSA
+            </a>
+          </li>
+          <li>
+            <a href="https://www.dol.gov/agencies/whd/fact-sheets/7d-overtime-multiple" target="_blank" rel="noopener">
+              DOL Fact Sheet #7D — Overtime for Multiple Rates of Pay
+            </a>
+          </li>
+          <li>
+            <a href="https://www.dol.gov/agencies/whd/fact-sheets/17o-overtime-tips" target="_blank" rel="noopener">
+              DOL Fact Sheet #17O — Tips and the FLSA
+            </a>
+          </li>
+          <li>
+            <a href="https://www.dol.gov/agencies/whd/hours/overtime-pay" target="_blank" rel="noopener">
+              DOL — Overtime Pay (General Overview)
+            </a>
+          </li>
+          <li>
+            <a href="https://www.law.cornell.edu/uscode/text/29/207" target="_blank" rel="noopener">
+              29 U.S. Code § 207 — Maximum Hours (FLSA Overtime)
+            </a>
+          </li>
+          <li>
+            <a href="https://www.dol.gov/agencies/whd/fact-sheets/15-tipped-employees" target="_blank" rel="noopener">
+              DOL Fact Sheet #15 — Tipped Employees Under FLSA
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
 
     <!-- Payroll Period Toggle -->
     <div class="card">
@@ -337,6 +432,7 @@ export default {
       payrollPeriod: 'weekly',
       activeWeek: 0,
       minimumWage: 7.25,
+      showExplainer: false,
       weeks: [makeWeek(), makeWeek()],
       saved: [],
       loading: false,
