@@ -3,10 +3,74 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Weighted Overtime Calculator</title>
+    <title>Weighted Overtime Calculator — FLSA Regular Rate OT | Free Payroll Tool</title>
+    <meta name="description" content="Free FLSA weighted overtime calculator. Calculate regular rate of pay for employees with multiple pay rates, tips, bonuses, and shift differentials. Supports weekly and bi-weekly payroll with minimum wage adjustments." />
+    <meta name="keywords" content="weighted overtime calculator, FLSA overtime, regular rate of pay, multiple pay rates overtime, payroll calculator, biweekly payroll, half-time premium, DOL overtime, shift differential calculator, tipped employee overtime" />
+    <meta name="author" content="Weighted Overtime Calculator" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://weighted-overtime-calculator.saasclaw.ai/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Weighted Overtime Calculator — FLSA Regular Rate OT" />
+    <meta property="og:description" content="Free FLSA weighted overtime calculator. Calculate regular rate of pay for employees with multiple pay rates, tips, bonuses, and shift differentials." />
+    <meta property="og:url" content="https://weighted-overtime-calculator.saasclaw.ai/" />
+    <meta property="og:site_name" content="Weighted Overtime Calculator" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Weighted Overtime Calculator — FLSA Regular Rate OT" />
+    <meta name="twitter:description" content="Free FLSA weighted overtime calculator. Calculate regular rate of pay for employees with multiple pay rates, tips, bonuses, and shift differentials." />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Weighted Overtime Calculator",
+      "description": "Free FLSA weighted overtime calculator. Calculate regular rate of pay for employees with multiple pay rates, tips, bonuses, and shift differentials. Supports weekly and bi-weekly payroll with minimum wage adjustments.",
+      "url": "https://weighted-overtime-calculator.saasclaw.ai/",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "All",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "FLSA weighted overtime calculation",
+        "Multiple pay rates",
+        "Non-discretionary bonuses",
+        "Discretionary bonuses excluded from regular rate",
+        "Tips excluded from regular rate",
+        "Minimum wage adjustment for sub-minimum rates",
+        "Weekly and bi-weekly payroll periods",
+        "Save and load calculations"
+      ]
+    }
+    </script>
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <style>
+      /* Critical CSS - hide app until Vue mounts */
+      [v-cloak] { display: none; }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app" v-cloak></div>
     <script type="module" src="/src/main.js"></script>
+
+    <!-- No-JS fallback -->
+    <noscript>
+      <div style="font-family:sans-serif;max-width:600px;margin:40px auto;padding:20px;color:#1e293b;">
+        <h1>⚖️ Weighted Overtime Calculator</h1>
+        <p>This calculator requires JavaScript to run. Please enable JavaScript in your browser settings and reload the page.</p>
+        <p>Calculate FLSA weighted overtime for employees with multiple pay rates, tips, bonuses, and shift differentials.</p>
+      </div>
+    </noscript>
   </body>
 </html>
