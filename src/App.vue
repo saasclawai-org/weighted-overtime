@@ -19,6 +19,17 @@
       </div>
     </div>
 
+    <!-- Minimum Wage / OT Floor -->
+    <div class="card">
+      <div class="field-row">
+        <div class="field">
+          <label>Minimum Wage Rate ($/hr)</label>
+          <input type="number" min="0" step="0.01" v-model.number="minimumWage" placeholder="7.25">
+        </div>
+      </div>
+      <p class="card-hint" style="margin-top:4px;">If set, OT premium uses the higher of the calculated regular rate or this minimum wage. Leave at 0 to use the regular rate only.</p>
+    </div>
+
     <!-- Bi-Weekly Mode -->
     <template v-if="payrollPeriod === 'biweekly'">
       <div class="week-tabs">
@@ -325,6 +336,7 @@ export default {
     return {
       payrollPeriod: 'weekly',
       activeWeek: 0,
+      minimumWage: 7.25,
       weeks: [makeWeek(), makeWeek()],
       saved: [],
       loading: false,
@@ -398,14 +410,24 @@ export default {
       const otHours = week.payRates.reduce((s, r) => s + r.otHours, 0)
       if (totalHours > 0 && otHours > 0) {
         const regularRate = totalEarnings / totalHours
-        const otPremium = (regularRate / 2) * otHours
+        // Use the higher of regular rate or minimum wage for OT
+        const otFloorRate = this.minimumWage > 0 ? Math.max(regularRate, this.minimumWage) : regularRate
+        const otPremium = (otFloorRate / 2) * otHours
+        if (this.minimumWage > 0 && otFloorRate > regularRate) {
+          lines.push({
+            label: `Regular Rate: $${regularRate.toFixed(2)}/hr (OT floored to $${otFloorRate.toFixed(2)}/hr)`,
+            value: 0,
+            isInfo: true,
+          })
+        } else {
+          lines.push({
+            label: `Regular Rate: $${regularRate.toFixed(2)}/hr`,
+            value: 0,
+            isInfo: true,
+          })
+        }
         lines.push({
-          label: `Regular Rate: $${regularRate.toFixed(2)}/hr`,
-          value: 0,
-          isInfo: true,
-        })
-        lines.push({
-          label: `OT Premium (${otHours}h × $${(regularRate / 2).toFixed(2)}/hr half-time)`,
+          label: `OT Premium (${otHours}h × $${(otFloorRate / 2).toFixed(2)}/hr half-time)`,
           value: otPremium,
         })
       }
@@ -503,6 +525,7 @@ export default {
         label,
         total,
         period_type: this.payrollPeriod,
+        minimumWage: this.minimumWage,
         weeks: JSON.parse(JSON.stringify(this.weeks)),
       }
       try {
@@ -543,6 +566,7 @@ export default {
       if (item.weeks) {
         this.weeks = JSON.parse(item.weeks)
         this.payrollPeriod = item.period_type || 'weekly'
+        this.minimumWage = item.minimumWage ?? 7.25
       } else if (item.payRates) {
         this.weeks = [makeWeek({ payRates: JSON.parse(item.payRates), bonuses: item.bonuses ? JSON.parse(item.bonuses) : [] })]
         this.payrollPeriod = 'weekly'
