@@ -114,6 +114,16 @@
             <button class="btn btn-secondary" @click="addDiscBonus(wi)">+ Add Discretionary Bonus</button>
           </div>
         </div>
+
+        <!-- Tips -->
+        <div class="card">
+          <h2><span class="icon">🪙</span> {{ wi === 0 ? 'Week 1' : 'Week 2' }} — Tips</h2>
+          <p class="card-hint">Excluded from the regular rate. Added to total pay after OT premium.</p>
+          <div class="field" style="margin-bottom:0;">
+            <label>Weekly Tips ($)</label>
+            <input type="number" min="0" step="0.01" v-model.number="week.tips" placeholder="0.00" style="max-width:200px;">
+          </div>
+        </div>
       </div>
 
       <!-- Bi-Weekly Combined Results -->
@@ -233,6 +243,16 @@
         </div>
       </div>
 
+      <!-- Tips -->
+      <div class="card">
+        <h2><span class="icon">🪙</span> Tips</h2>
+        <p class="card-hint">Excluded from the regular rate. Added to total pay after OT premium.</p>
+        <div class="field" style="margin-bottom:0;">
+          <label>Weekly Tips ($)</label>
+          <input type="number" min="0" step="0.01" v-model.number="weeks[0].tips" placeholder="0.00" style="max-width:200px;">
+        </div>
+      </div>
+
       <!-- Results -->
       <div class="card results" v-if="weeklyTotal > 0">
         <h2><span class="icon">💰</span> Weekly Earnings Breakdown</h2>
@@ -295,6 +315,7 @@ function makeWeek(overrides = {}) {
     payRates: [makeDefaultRate(), makeDefaultRate('Forklift Cert', 28, 10, 0)],
     bonuses: [],
     discretionaryBonuses: [],
+    tips: 0,
     ...overrides,
   }
 }
@@ -395,6 +416,11 @@ export default {
         lines.push({ label: 'Discretionary Bonuses (excl. from reg. rate)', value: discTotal })
       }
 
+      // Step 6: Tips (excluded from regular rate)
+      if (week.tips > 0) {
+        lines.push({ label: 'Tips (excl. from reg. rate)', value: week.tips })
+      }
+
       return lines
     },
 
@@ -437,6 +463,12 @@ export default {
       const discLine = lines.find(l => l.label.includes('Discretionary Bonuses'))
       if (discLine) {
         groups.push({ label: 'Discretionary Bonuses', lines: [discLine], subtotal: discLine.value })
+      }
+
+      // Tips group
+      const tipsLine = lines.find(l => l.label.includes('Tips'))
+      if (tipsLine) {
+        groups.push({ label: 'Tips', lines: [tipsLine], subtotal: tipsLine.value })
       }
 
       return groups
