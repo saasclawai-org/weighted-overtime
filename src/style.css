@@ -130,6 +130,13 @@ h1 span { color: var(--primary); }
 
 .card h2 .icon { font-size: 1.2rem; }
 
+.card-hint {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: -8px 0 14px;
+  line-height: 1.4;
+}
+
 /* Form inputs */
 .field {
   display: flex;

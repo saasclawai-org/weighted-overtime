@@ -64,14 +64,15 @@
           </div>
         </div>
 
-        <!-- Bonuses -->
+        <!-- Bonuses (Non-Discretionary) -->
         <div class="card">
-          <h2><span class="icon">🎁</span> {{ wi === 0 ? 'Week 1' : 'Week 2' }} — Bonuses &amp; Differentials</h2>
+          <h2><span class="icon">🎁</span> {{ wi === 0 ? 'Week 1' : 'Week 2' }} — Non-Discretionary Bonuses &amp; Differentials</h2>
+          <p class="card-hint">These are included in the regular rate of pay for OT calculation.</p>
           <div class="entry-list">
             <div class="entry-row" v-for="(bonus, i) in week.bonuses" :key="i">
               <div class="field">
                 <label>Label</label>
-                <input type="text" v-model="bonus.label" placeholder="e.g. Night Shift">
+                <input type="text" v-model="bonus.label" placeholder="e.g. Shift Diff">
               </div>
               <div class="field">
                 <label>Type</label>
@@ -89,6 +90,28 @@
           </div>
           <div class="btn-row">
             <button class="btn btn-secondary" @click="addBonus(wi)">+ Add Bonus</button>
+          </div>
+        </div>
+
+        <!-- Discretionary Bonuses -->
+        <div class="card">
+          <h2><span class="icon">🏆</span> {{ wi === 0 ? 'Week 1' : 'Week 2' }} — Discretionary Bonuses</h2>
+          <p class="card-hint">Not included in the regular rate. Added to total pay after OT premium.</p>
+          <div class="entry-list">
+            <div class="entry-row" v-for="(b, i) in week.discretionaryBonuses" :key="i">
+              <div class="field">
+                <label>Label</label>
+                <input type="text" v-model="b.label" placeholder="e.g. Holiday Bonus">
+              </div>
+              <div class="field">
+                <label>Amount ($)</label>
+                <input type="number" min="0" step="0.01" v-model.number="b.value" placeholder="0">
+              </div>
+              <button class="btn-danger-sm" @click="week.discretionaryBonuses.splice(i, 1)" title="Remove">✕</button>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-secondary" @click="addDiscBonus(wi)">+ Add Discretionary Bonus</button>
           </div>
         </div>
       </div>
@@ -159,14 +182,15 @@
         </div>
       </div>
 
-      <!-- Bonuses -->
+      <!-- Bonuses (Non-Discretionary) -->
       <div class="card">
-        <h2><span class="icon">🎁</span> Bonuses &amp; Differentials</h2>
+        <h2><span class="icon">🎁</span> Non-Discretionary Bonuses &amp; Differentials</h2>
+        <p class="card-hint">These are included in the regular rate of pay for OT calculation.</p>
         <div class="entry-list">
           <div class="entry-row" v-for="(bonus, i) in weeks[0].bonuses" :key="i">
             <div class="field">
               <label>Label</label>
-              <input type="text" v-model="bonus.label" placeholder="e.g. Night Shift">
+              <input type="text" v-model="bonus.label" placeholder="e.g. Shift Diff">
             </div>
             <div class="field">
               <label>Type</label>
@@ -184,6 +208,28 @@
         </div>
         <div class="btn-row">
           <button class="btn btn-secondary" @click="addBonus(0)">+ Add Bonus</button>
+        </div>
+      </div>
+
+      <!-- Discretionary Bonuses -->
+      <div class="card">
+        <h2><span class="icon">🏆</span> Discretionary Bonuses</h2>
+        <p class="card-hint">Not included in the regular rate. Added to total pay after OT premium.</p>
+        <div class="entry-list">
+          <div class="entry-row" v-for="(b, i) in weeks[0].discretionaryBonuses" :key="i">
+            <div class="field">
+              <label>Label</label>
+              <input type="text" v-model="b.label" placeholder="e.g. Holiday Bonus">
+            </div>
+            <div class="field">
+              <label>Amount ($)</label>
+              <input type="number" min="0" step="0.01" v-model.number="b.value" placeholder="0">
+            </div>
+            <button class="btn-danger-sm" @click="weeks[0].discretionaryBonuses.splice(i, 1)" title="Remove">✕</button>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" @click="addDiscBonus(0)">+ Add Discretionary Bonus</button>
         </div>
       </div>
 
@@ -248,6 +294,7 @@ function makeWeek(overrides = {}) {
   return {
     payRates: [makeDefaultRate(), makeDefaultRate('Forklift Cert', 28, 10, 0)],
     bonuses: [],
+    discretionaryBonuses: [],
     ...overrides,
   }
 }
@@ -288,6 +335,10 @@ export default {
 
     addBonus(weekIndex) {
       this.weeks[weekIndex].bonuses.push({ label: '', type: 'flat', value: 0 })
+    },
+
+    addDiscBonus(weekIndex) {
+      this.weeks[weekIndex].discretionaryBonuses.push({ label: '', value: 0 })
     },
 
     /**
@@ -338,6 +389,12 @@ export default {
         })
       }
 
+      // Step 5: Discretionary bonuses (excluded from regular rate)
+      const discTotal = (week.discretionaryBonuses || []).reduce((s, b) => s + b.value, 0)
+      if (discTotal > 0) {
+        lines.push({ label: 'Discretionary Bonuses (excl. from reg. rate)', value: discTotal })
+      }
+
       return lines
     },
 
@@ -374,6 +431,12 @@ export default {
           lines: otLines,
           subtotal: otPay ? otPay.value : 0,
         })
+      }
+
+      // Discretionary bonuses group
+      const discLine = lines.find(l => l.label.includes('Discretionary Bonuses'))
+      if (discLine) {
+        groups.push({ label: 'Discretionary Bonuses', lines: [discLine], subtotal: discLine.value })
       }
 
       return groups
