@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "enforce": "block",
+  "file_limits": {
+    "default": 500
+  },
+  "architecture": {
+    "rules": [
+      "Keep files focused and modular \u2014 one component per file",
+      "Business logic in lib/ or hooks/ (React) / stores/ (Svelte) / composables/ (Vue)",
+      "Components under 200 lines; extract sub-components when larger",
+      "This project deploys as a static site with PostgreSQL available",
+      "For data persistence, use the built-in Forms API: POST /api/forms/{slug}/ to submit, GET /api/forms/{slug}/data/ to retrieve",
+      "The API key is in the project's .env as FORM_API_KEY \u2014 include as X-Form-Key header or _form_key field",
+      "Do NOT create custom Django models, Express servers, or backend code \u2014 use the platform's FormSubmission table",
+      "For React/Vite: store key as VITE_FORM_API_KEY in repo/.env, access via import.meta.env.VITE_FORM_API_KEY"
+    ]
+  },
+  "platform": {
+    "forms_api": {
+      "submit": "POST /api/forms/{slug}/  (JSON or form-encoded, requires X-Form-Key header or _form_key field)",
+      "read": "GET /api/forms/{slug}/data/  (public read, API key auth, returns flattened {data: [...]})",
+      "delete": "DELETE /api/forms/{slug}/{id}/  (API key auth)"
+    },
+    "database": "PostgreSQL (auto-managed via FormSubmission model \u2014 no custom Django models needed)",
+    "auth": "Per-project API key via X-Form-Key header or _form_key hidden field (found in project's .env as FORM_API_KEY)"
+  }
+}
