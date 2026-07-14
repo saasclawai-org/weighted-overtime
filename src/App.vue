@@ -379,12 +379,15 @@ export default {
      * 1. Straight-time earnings: (straight hours + OT hours) × base rate for each role
      * 2. Add bonuses/differentials
      * 3. Regular rate = total earnings ÷ total hours
+     *    - When minimum wage is set, use max(rate, min wage) for the regular rate denominator
+     *    - Actual straight-time pay stays at the real rate
      * 4. OT premium = (regular rate ÷ 2) × OT hours
      */
     weekBreakdown(week) {
       const lines = []
+      const hasMinWage = this.minimumWage > 0
 
-      // Step 1: Straight-time earnings per rate
+      // Step 1: Straight-time earnings per rate (actual pay)
       for (const r of week.payRates) {
         const totalHoursForRate = r.hours + r.otHours
         const earnings = r.hourly * totalHoursForRate
@@ -409,13 +412,15 @@ export default {
       // Step 4: Regular rate & OT premium
       const otHours = week.payRates.reduce((s, r) => s + r.otHours, 0)
       if (totalHours > 0 && otHours > 0) {
-        const regularRate = totalEarnings / totalHours
-        // Use the higher of regular rate or minimum wage for OT
-        const otFloorRate = this.minimumWage > 0 ? Math.max(regularRate, this.minimumWage) : regularRate
-        const otPremium = (otFloorRate / 2) * otHours
-        if (this.minimumWage > 0 && otFloorRate > regularRate) {
+        // For regular rate, use min wage where base rate is below it
+        const effectiveEarnings = hasMinWage
+          ? week.payRates.reduce((s, r) => s + Math.max(r.hourly, this.minimumWage) * (r.hours + r.otHours), 0) + bonusTotal
+          : totalEarnings
+        const regularRate = effectiveEarnings / totalHours
+        const otPremium = (regularRate / 2) * otHours
+        if (hasMinWage && effectiveEarnings > totalEarnings) {
           lines.push({
-            label: `Regular Rate: $${regularRate.toFixed(2)}/hr (OT floored to $${otFloorRate.toFixed(2)}/hr)`,
+            label: `Regular Rate: $${regularRate.toFixed(2)}/hr (incl. min wage adjustment)`,
             value: 0,
             isInfo: true,
           })
@@ -427,7 +432,7 @@ export default {
           })
         }
         lines.push({
-          label: `OT Premium (${otHours}h × $${(otFloorRate / 2).toFixed(2)}/hr half-time)`,
+          label: `OT Premium (${otHours}h × $${(regularRate / 2).toFixed(2)}/hr half-time)`,
           value: otPremium,
         })
       }
