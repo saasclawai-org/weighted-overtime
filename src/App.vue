@@ -1,7 +1,7 @@
 <template>
   <div class="app">
     <h1>⚖️ Weighted <span>Overtime</span> Calculator</h1>
-    <p class="subtitle">Multiple pay rates with per-rate overtime, bonuses &amp; shift differentials.</p>
+    <p class="subtitle">FLSA regular-rate overtime: all earnings ÷ all hours = regular rate. Half of regular rate × OT hours = OT premium.</p>
 
     <!-- Payroll Period Toggle -->
     <div class="card">
@@ -19,18 +19,17 @@
       </div>
     </div>
 
-    <!-- Week Sections -->
+    <!-- Bi-Weekly Mode -->
     <template v-if="payrollPeriod === 'biweekly'">
-      <!-- Week Tabs -->
       <div class="week-tabs">
         <button class="week-tab" :class="{ active: activeWeek === 0 }" @click="activeWeek = 0">Week 1</button>
         <button class="week-tab" :class="{ active: activeWeek === 1 }" @click="activeWeek = 1">Week 2</button>
       </div>
 
-      <!-- Active Week Editor -->
       <div class="week-section" v-for="(week, wi) in weeks" :key="wi" v-show="activeWeek === wi">
+        <!-- Pay Rates -->
         <div class="card">
-          <h2><span class="icon">💵</span> {{ wi === 0 ? 'Week 1' : 'Week 2' }} — Pay Rates &amp; Overtime</h2>
+          <h2><span class="icon">💵</span> {{ wi === 0 ? 'Week 1' : 'Week 2' }} — Pay Rates</h2>
           <div class="entry-list">
             <div class="rate-group" v-for="(rate, i) in week.payRates" :key="i">
               <div class="rate-header">
@@ -46,24 +45,16 @@
                   <input type="number" min="0" step="0.01" v-model.number="rate.hourly" placeholder="22.00">
                 </div>
                 <div class="field">
-                  <label>Regular Hours</label>
+                  <label>Straight Hours</label>
                   <input type="number" min="0" step="0.5" v-model.number="rate.hours" placeholder="30">
                 </div>
                 <div class="field">
                   <label>OT Hours</label>
                   <input type="number" min="0" step="0.5" v-model.number="rate.otHours" placeholder="0">
                 </div>
-                <div class="field">
-                  <label>OT Multiplier</label>
-                  <input type="number" min="1" step="0.1" v-model.number="rate.otMultiplier" placeholder="1.5">
-                </div>
-                <div class="field">
-                  <label>OT Rate ($/hr)</label>
-                  <input type="number" min="0" step="0.01" v-model.number="rate.otRate" placeholder="0 (auto)">
-                </div>
                 <div class="field" style="justify-content:flex-end;">
-                  <label>Subtotal</label>
-                  <span class="pay-rate-subtotal">{{ formatCurrency(rateTotal(rate)) }}</span>
+                  <label>Earnings</label>
+                  <span class="pay-rate-subtotal">{{ formatCurrency(rate.hourly * (rate.hours + rate.otHours)) }}</span>
                 </div>
               </div>
             </div>
@@ -73,7 +64,7 @@
           </div>
         </div>
 
-        <!-- Bonuses per week -->
+        <!-- Bonuses -->
         <div class="card">
           <h2><span class="icon">🎁</span> {{ wi === 0 ? 'Week 1' : 'Week 2' }} — Bonuses &amp; Differentials</h2>
           <div class="entry-list">
@@ -106,16 +97,18 @@
       <div class="card results" v-if="biweeklyTotal > 0">
         <h2><span class="icon">💰</span> Bi-Weekly Earnings Breakdown</h2>
         <div class="breakdown">
-          <template v-for="(weekData, wi) in biweeklyBreakdown" :key="wi">
+          <template v-for="(wk, wi) in weeks" :key="wi">
             <div class="breakdown-group">
               <div class="breakdown-group-label">{{ wi === 0 ? 'Week 1' : 'Week 2' }}</div>
-              <div class="breakdown-row" v-for="line in weekData.lines" :key="line.label">
-                <span class="label">{{ line.label }}</span>
-                <span class="value">{{ formatCurrency(line.value) }}</span>
-              </div>
+              <template v-for="line in weekBreakdown(wk)" :key="line.label">
+                <div class="breakdown-row">
+                  <span class="label">{{ line.label }}</span>
+                  <span class="value">{{ formatCurrency(line.value) }}</span>
+                </div>
+              </template>
               <div class="breakdown-row group-sub">
                 <span class="label">{{ wi === 0 ? 'Week 1' : 'Week 2' }} Subtotal</span>
-                <span class="value">{{ formatCurrency(weekData.subtotal) }}</span>
+                <span class="value">{{ formatCurrency(weekTotal(wk)) }}</span>
               </div>
             </div>
           </template>
@@ -127,11 +120,11 @@
       </div>
     </template>
 
-    <!-- Weekly Mode (original single-week) -->
+    <!-- Weekly Mode -->
     <template v-else>
       <!-- Pay Rates -->
       <div class="card">
-        <h2><span class="icon">💵</span> Pay Rates &amp; Overtime</h2>
+        <h2><span class="icon">💵</span> Pay Rates</h2>
         <div class="entry-list">
           <div class="rate-group" v-for="(rate, i) in weeks[0].payRates" :key="i">
             <div class="rate-header">
@@ -147,24 +140,16 @@
                 <input type="number" min="0" step="0.01" v-model.number="rate.hourly" placeholder="22.00">
               </div>
               <div class="field">
-                <label>Regular Hours</label>
+                <label>Straight Hours</label>
                 <input type="number" min="0" step="0.5" v-model.number="rate.hours" placeholder="30">
               </div>
               <div class="field">
                 <label>OT Hours</label>
                 <input type="number" min="0" step="0.5" v-model.number="rate.otHours" placeholder="0">
               </div>
-              <div class="field">
-                <label>OT Multiplier</label>
-                <input type="number" min="1" step="0.1" v-model.number="rate.otMultiplier" placeholder="1.5">
-              </div>
-              <div class="field">
-                <label>OT Rate ($/hr)</label>
-                <input type="number" min="0" step="0.01" v-model.number="rate.otRate" placeholder="0 (auto)">
-              </div>
               <div class="field" style="justify-content:flex-end;">
-                <label>Subtotal</label>
-                <span class="pay-rate-subtotal">{{ formatCurrency(rateTotal(rate)) }}</span>
+                <label>Earnings</label>
+                <span class="pay-rate-subtotal">{{ formatCurrency(rate.hourly * (rate.hours + rate.otHours)) }}</span>
               </div>
             </div>
           </div>
@@ -206,17 +191,19 @@
       <div class="card results" v-if="weeklyTotal > 0">
         <h2><span class="icon">💰</span> Weekly Earnings Breakdown</h2>
         <div class="breakdown">
-          <div class="breakdown-group" v-for="(group, gi) in weeklyBreakdown" :key="gi">
-            <div class="breakdown-group-label">{{ group.label }}</div>
-            <div class="breakdown-row" v-for="line in group.lines" :key="line.label">
-              <span class="label">{{ line.label }}</span>
-              <span class="value">{{ formatCurrency(line.value) }}</span>
+          <template v-for="group in weeklyBreakdown" :key="group.label">
+            <div class="breakdown-group">
+              <div class="breakdown-group-label">{{ group.label }}</div>
+              <div class="breakdown-row" v-for="line in group.lines" :key="line.label">
+                <span class="label">{{ line.label }}</span>
+                <span class="value">{{ formatCurrency(line.value) }}</span>
+              </div>
+              <div class="breakdown-row group-sub" v-if="group.subtotal != null">
+                <span class="label">{{ group.label }} Subtotal</span>
+                <span class="value">{{ formatCurrency(group.subtotal) }}</span>
+              </div>
             </div>
-            <div class="breakdown-row group-sub" v-if="group.subtotal != null">
-              <span class="label">{{ group.label }} Subtotal</span>
-              <span class="value">{{ formatCurrency(group.subtotal) }}</span>
-            </div>
-          </div>
+          </template>
           <div class="breakdown-row total">
             <span class="label">Total Weekly Pay</span>
             <span class="value">{{ formatCurrency(weeklyTotal) }}</span>
@@ -254,7 +241,7 @@ const API_KEY = import.meta.env.VITE_FORM_API_KEY || 'VHoqh9fp8PPLeBP78_v49Vhauq
 const API_BASE = '/api/forms/weighted-overtime-calculator'
 
 function makeDefaultRate(label = 'Warehouse', hourly = 22, hours = 30, otHours = 4) {
-  return { label, hourly, hours, otHours, otMultiplier: 1.5, otRate: 0 }
+  return { label, hourly, hours, otHours }
 }
 
 function makeWeek(overrides = {}) {
@@ -285,15 +272,8 @@ export default {
       return this.weeklyBreakdown.reduce((s, g) => s + (g.subtotal || 0), 0)
     },
 
-    biweeklyBreakdown() {
-      return this.weeks.map((w, wi) => ({
-        lines: this.buildBreakdown(w).flatMap(g => g.lines),
-        subtotal: this.buildBreakdown(w).reduce((s, g) => s + (g.subtotal || 0), 0),
-      }))
-    },
-
     biweeklyTotal() {
-      return this.biweeklyBreakdown.reduce((s, w) => s + w.subtotal, 0)
+      return this.weeks.reduce((s, w) => s + this.weekTotal(w), 0)
     },
   },
 
@@ -303,62 +283,111 @@ export default {
     },
 
     addPayRate(weekIndex) {
-      this.weeks[weekIndex].payRates.push({ label: '', hourly: 0, hours: 0, otHours: 0, otMultiplier: 1.5, otRate: 0 })
+      this.weeks[weekIndex].payRates.push({ label: '', hourly: 0, hours: 0, otHours: 0 })
     },
 
     addBonus(weekIndex) {
       this.weeks[weekIndex].bonuses.push({ label: '', type: 'flat', value: 0 })
     },
 
-    buildBreakdown(week) {
-      const groups = []
+    /**
+     * FLSA Regular Rate calculation for one week:
+     * 1. Straight-time earnings: (straight hours + OT hours) × base rate for each role
+     * 2. Add bonuses/differentials
+     * 3. Regular rate = total earnings ÷ total hours
+     * 4. OT premium = (regular rate ÷ 2) × OT hours
+     */
+    weekBreakdown(week) {
+      const lines = []
+
+      // Step 1: Straight-time earnings per rate
       for (const r of week.payRates) {
-        const lines = []
-        const regularPay = r.hourly * r.hours
-        if (r.hours > 0) {
-          lines.push({ label: `Regular (${r.hours}h × $${r.hourly.toFixed(2)})`, value: regularPay })
-        }
-        const effectiveOtRate = r.otRate > 0 ? r.otRate : r.hourly
-        const otPay = effectiveOtRate * r.otHours * r.otMultiplier
-        if (r.otHours > 0) {
-          const rateLabel = r.otRate > 0 ? `$${effectiveOtRate.toFixed(2)}` : `$${r.hourly.toFixed(2)}`
+        const totalHoursForRate = r.hours + r.otHours
+        const earnings = r.hourly * totalHoursForRate
+        if (totalHoursForRate > 0) {
           lines.push({
-            label: `OT (${r.otHours}h × ${rateLabel} × ${r.otMultiplier}×)`,
-            value: otPay,
+            label: `${r.label || 'Rate'} (${totalHoursForRate}h × $${r.hourly.toFixed(2)})`,
+            value: earnings,
           })
         }
-        if (lines.length > 0) {
-          groups.push({ label: r.label || 'Rate', lines, subtotal: regularPay + otPay })
-        }
       }
-      const bonusLines = this.calcBonusBreakdown(week)
-      if (bonusLines.length > 0) {
-        groups.push({
-          label: 'Bonuses & Differentials',
-          lines: bonusLines.map(b => ({ label: b.label, value: b.pay })),
-          subtotal: bonusLines.reduce((s, b) => s + b.pay, 0),
+
+      // Step 2: Bonuses
+      const bonusTotal = this.calcBonusTotal(week)
+      if (bonusTotal > 0) {
+        lines.push({ label: 'Bonuses & Differentials', value: bonusTotal })
+      }
+
+      // Step 3: Compute totals
+      const totalEarnings = lines.reduce((s, l) => s + l.value, 0)
+      const totalHours = week.payRates.reduce((s, r) => s + r.hours + r.otHours, 0)
+
+      // Step 4: Regular rate & OT premium
+      const otHours = week.payRates.reduce((s, r) => s + r.otHours, 0)
+      if (totalHours > 0 && otHours > 0) {
+        const regularRate = totalEarnings / totalHours
+        const otPremium = (regularRate / 2) * otHours
+        lines.push({
+          label: `Regular Rate: $${regularRate.toFixed(2)}/hr`,
+          value: 0,
+          isInfo: true,
+        })
+        lines.push({
+          label: `OT Premium (${otHours}h × $${(regularRate / 2).toFixed(2)}/hr half-time)`,
+          value: otPremium,
         })
       }
+
+      return lines
+    },
+
+    weekTotal(week) {
+      return this.weekBreakdown(week).reduce((s, l) => s + l.value, 0)
+    },
+
+    buildBreakdown(week) {
+      const groups = []
+      const lines = this.weekBreakdown(week)
+
+      // Group straight-time earnings by rate
+      const rateLines = lines.filter(l => !l.isInfo && l.label !== 'Bonuses & Differentials' && !l.label.includes('OT Premium') && !l.label.includes('Regular Rate'))
+      if (rateLines.length > 0) {
+        groups.push({
+          label: 'Straight-Time Earnings',
+          lines: rateLines,
+          subtotal: rateLines.reduce((s, l) => s + l.value, 0),
+        })
+      }
+
+      // Bonuses group
+      const bonusLine = lines.find(l => l.label === 'Bonuses & Differentials')
+      if (bonusLine) {
+        groups.push({ label: 'Bonuses & Differentials', lines: [bonusLine], subtotal: bonusLine.value })
+      }
+
+      // OT premium group
+      const otLines = lines.filter(l => l.label.includes('OT Premium') || l.label.includes('Regular Rate'))
+      if (otLines.length > 0) {
+        const otPay = lines.find(l => l.label.includes('OT Premium'))
+        groups.push({
+          label: 'Overtime Premium',
+          lines: otLines,
+          subtotal: otPay ? otPay.value : 0,
+        })
+      }
+
       return groups
     },
 
-    calcBonusBreakdown(week) {
+    calcBonusTotal(week) {
       const totalHours = week.payRates.reduce((s, r) => s + r.hours + r.otHours, 0)
-      const regularHoursTotal = week.payRates.reduce((s, r) => s + r.hours, 0)
-      return week.bonuses.map(b => {
-        if (b.type === 'flat') {
-          return { label: b.label || 'Bonus', pay: b.value }
-        }
+      return week.bonuses.reduce((total, b) => {
+        if (b.type === 'flat') return total + b.value
+        // Multiplier: applies to straight-time blended rate × total hours
+        const regularHoursTotal = week.payRates.reduce((s, r) => s + r.hours, 0)
         const blended = regularHoursTotal > 0 ? week.payRates.reduce((s, r) => s + r.hourly * r.hours, 0) / regularHoursTotal : 0
-        return { label: b.label || 'Differential', pay: blended * totalHours * (b.value - 1) }
-      }).filter(b => b.pay > 0)
-    },
-
-    rateTotal(rate) {
-      const regularPay = rate.hourly * rate.hours
-      const effectiveOtRate = rate.otRate > 0 ? rate.otRate : rate.hourly
-      const otPay = effectiveOtRate * rate.otHours * rate.otMultiplier
-      return regularPay + otPay
+        return total + (blended * totalHours * (b.value - 1))
+      }, 0)
     },
 
     formatCurrency(val) {
@@ -420,7 +449,6 @@ export default {
         this.weeks = JSON.parse(item.weeks)
         this.payrollPeriod = item.period_type || 'weekly'
       } else if (item.payRates) {
-        // Legacy single-week format
         this.weeks = [makeWeek({ payRates: JSON.parse(item.payRates), bonuses: item.bonuses ? JSON.parse(item.bonuses) : [] })]
         this.payrollPeriod = 'weekly'
       }
