@@ -147,9 +147,23 @@ input:focus, select:focus {
   align-items: end;
 }
 
-.pay-rate-row {
+.rate-group {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.rate-header {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  margin-bottom: 12px;
+}
+
+.rate-fields {
   display: grid;
-  grid-template-columns: 1fr 100px 100px 90px auto;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   gap: 10px;
   align-items: end;
 }
@@ -157,26 +171,38 @@ input:focus, select:focus {
 .pay-rate-subtotal {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: var(--text);
+  padding: 10px 0 0;
 }
 
-.blended-rate {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 14px;
-  padding: 10px 14px;
-  background: #f0f0ff;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  color: var(--primary);
+/* Breakdown groups */
+.breakdown-group {
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255,255,255,.15);
 }
 
-.section-hint {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  margin-bottom: 14px;
+.breakdown-group:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.breakdown-group-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  opacity: .7;
+  margin-bottom: 6px;
+}
+
+.breakdown-row.group-sub {
+  border-top: 1px solid rgba(255,255,255,.15);
+  padding-top: 6px;
+  margin-top: 4px;
+  font-weight: 600;
 }
 
 .entry-row input { margin: 0; }
@@ -245,5 +271,5 @@ input:focus, select:focus {
 @media (max-width: 600px) {
   .field-row { grid-template-columns: 1fr; }
   .entry-row { grid-template-columns: 1fr 70px; }
-  .pay-rate-row { grid-template-columns: 1fr 1fr; }
+  .rate-fields { grid-template-columns: 1fr 1fr; }
 }
