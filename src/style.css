@@ -147,6 +147,38 @@ input:focus, select:focus {
   align-items: end;
 }
 
+.pay-rate-row {
+  display: grid;
+  grid-template-columns: 1fr 100px 100px 90px auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.pay-rate-subtotal {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.blended-rate {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: #f0f0ff;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--primary);
+}
+
+.section-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
 .entry-row input { margin: 0; }
 
 /* Results */
@@ -210,7 +242,8 @@ input:focus, select:focus {
 }
 
 /* Responsive */
-@media (max-width: 500px) {
+@media (max-width: 600px) {
   .field-row { grid-template-columns: 1fr; }
   .entry-row { grid-template-columns: 1fr 70px; }
+  .pay-rate-row { grid-template-columns: 1fr 1fr; }
 }

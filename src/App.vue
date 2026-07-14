@@ -1,26 +1,44 @@
 <template>
   <div class="app">
     <h1>⚖️ Weighted <span>Overtime</span> Calculator</h1>
-    <p class="subtitle">Calculate earnings with tiered overtime rates, bonuses &amp; shift differentials.</p>
+    <p class="subtitle">Multiple pay rates with tiered overtime, bonuses &amp; shift differentials.</p>
 
-    <!-- Base Settings -->
+    <!-- Pay Rates -->
     <div class="card">
-      <h2><span class="icon">🔧</span> Base Settings</h2>
-      <div class="field-row">
-        <div class="field">
-          <label for="rate">Hourly Rate ($)</label>
-          <input id="rate" type="number" min="0" step="0.01" v-model.number="baseRate" placeholder="25.00">
+      <h2><span class="icon">💵</span> Pay Rates</h2>
+      <div class="entry-list">
+        <div class="pay-rate-row" v-for="(rate, i) in payRates" :key="i">
+          <div class="field">
+            <label>Label</label>
+            <input type="text" v-model="rate.label" placeholder="e.g. Warehouse">
+          </div>
+          <div class="field">
+            <label>Hourly Rate ($)</label>
+            <input type="number" min="0" step="0.01" v-model.number="rate.hourly" placeholder="22.00">
+          </div>
+          <div class="field">
+            <label>Hours Worked</label>
+            <input type="number" min="0" step="0.5" v-model.number="rate.hours" placeholder="30">
+          </div>
+          <div class="field" style="justify-content:flex-end;">
+            <span class="pay-rate-subtotal">{{ formatCurrency(rate.hourly * rate.hours) }}</span>
+          </div>
+          <button class="btn-danger-sm" @click="payRates.splice(i, 1)" title="Remove" v-if="payRates.length > 1">✕</button>
         </div>
-        <div class="field">
-          <label for="regularHours">Regular Hours / Week</label>
-          <input id="regularHours" type="number" min="0" step="0.5" v-model.number="regularHours" placeholder="40">
-        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" @click="addPayRate">+ Add Pay Rate</button>
+      </div>
+      <div class="blended-rate" v-if="totalHours > 0">
+        <span>Blended Rate (weighted average):</span>
+        <strong>{{ formatCurrency(blendedRate) }}/hr</strong>
       </div>
     </div>
 
     <!-- Overtime Tiers -->
     <div class="card">
       <h2><span class="icon">⏱️</span> Overtime Tiers</h2>
+      <p class="section-hint">Overtime is calculated using the blended rate from all pay rates above.</p>
       <div class="entry-list">
         <div class="entry-row" v-for="(tier, i) in overtimeTiers" :key="i">
           <div class="field">
@@ -72,7 +90,7 @@
     </div>
 
     <!-- Results -->
-    <div class="card results" v-if="baseRate > 0 && regularHours > 0">
+    <div class="card results" v-if="totalHours > 0">
       <h2><span class="icon">💰</span> Weekly Earnings Breakdown</h2>
       <div class="breakdown">
         <div class="breakdown-row" v-for="line in breakdown" :key="line.label">
@@ -116,8 +134,10 @@ const API_BASE = '/api/forms/weighted-overtime-calculator'
 export default {
   data() {
     return {
-      baseRate: 25,
-      regularHours: 40,
+      payRates: [
+        { label: 'Regular', hourly: 25, hours: 30 },
+        { label: 'Lead Role', hourly: 30, hours: 10 },
+      ],
       overtimeTiers: [
         { hours: 4, multiplier: 1.5, label: 'Time & Half' },
         { hours: 4, multiplier: 2.0, label: 'Double Time' },
@@ -129,16 +149,35 @@ export default {
   },
 
   computed: {
-    regularPay() {
-      return this.baseRate * this.regularHours
+    totalStraightHours() {
+      return this.payRates.reduce((s, r) => s + r.hours, 0)
+    },
+
+    totalStraightPay() {
+      return this.payRates.reduce((s, r) => s + r.hourly * r.hours, 0)
+    },
+
+    blendedRate() {
+      const totalH = this.totalStraightHours
+      return totalH > 0 ? this.totalStraightPay / totalH : 0
+    },
+
+    otHours() {
+      return this.overtimeTiers.reduce((s, t) => s + t.hours, 0)
+    },
+
+    totalHours() {
+      return this.totalStraightHours + this.otHours
     },
 
     overtimeBreakdown() {
-      return this.overtimeTiers.map(tier => ({
-        label: tier.label || `${tier.multiplier}× OT`,
-        hours: tier.hours,
-        pay: this.baseRate * tier.hours * tier.multiplier,
-      }))
+      return this.overtimeTiers
+        .filter(t => t.hours > 0)
+        .map(tier => ({
+          label: tier.label || `${tier.multiplier}× OT`,
+          hours: tier.hours,
+          pay: this.blendedRate * tier.hours * tier.multiplier,
+        }))
     },
 
     bonusBreakdown() {
@@ -146,16 +185,19 @@ export default {
         if (b.type === 'flat') {
           return { label: b.label || 'Bonus', pay: b.value }
         }
-        const otHours = this.overtimeTiers.reduce((s, t) => s + t.hours, 0)
-        const totalHours = this.regularHours + otHours
-        return { label: b.label || 'Differential', pay: this.baseRate * totalHours * (b.value - 1) }
+        return { label: b.label || 'Differential', pay: this.blendedRate * this.totalHours * (b.value - 1) }
       }).filter(b => b.pay > 0)
     },
 
     breakdown() {
-      const lines = [{ label: `Regular (${this.regularHours}h × $${this.baseRate.toFixed(2)})`, value: this.regularPay }]
+      const lines = []
+      for (const r of this.payRates) {
+        if (r.hours > 0) {
+          lines.push({ label: `${r.label || 'Rate'} (${r.hours}h × $${r.hourly.toFixed(2)})`, value: r.hourly * r.hours })
+        }
+      }
       for (const ot of this.overtimeBreakdown) {
-        lines.push({ label: `${ot.label} (${ot.hours}h × ${this.overtimeTiers[this.overtimeBreakdown.indexOf(ot)].multiplier}×)`, value: ot.pay })
+        lines.push({ label: `${ot.label} (${ot.hours}h × ${this.overtimeTiers.find(t => t.label === ot.label || t.hours === ot.hours)?.multiplier || ''}× @ blended)`, value: ot.pay })
       }
       for (const b of this.bonusBreakdown) {
         lines.push({ label: b.label, value: b.pay })
@@ -169,6 +211,10 @@ export default {
   },
 
   methods: {
+    addPayRate() {
+      this.payRates.push({ label: '', hourly: 0, hours: 0 })
+    },
+
     addOvertimeTier() {
       this.overtimeTiers.push({ hours: 0, multiplier: 1.5, label: '' })
     },
@@ -192,8 +238,7 @@ export default {
       const payload = {
         label,
         total: this.totalPay,
-        baseRate: this.baseRate,
-        regularHours: this.regularHours,
+        payRates: JSON.parse(JSON.stringify(this.payRates)),
         overtimeTiers: JSON.parse(JSON.stringify(this.overtimeTiers)),
         bonuses: JSON.parse(JSON.stringify(this.bonuses)),
       }
@@ -232,8 +277,7 @@ export default {
     },
 
     loadItem(item) {
-      this.baseRate = item.baseRate || 25
-      this.regularHours = item.regularHours || 40
+      this.payRates = item.payRates ? JSON.parse(item.payRates) : [{ label: 'Regular', hourly: 25, hours: 40 }]
       this.overtimeTiers = item.overtimeTiers ? JSON.parse(item.overtimeTiers) : []
       this.bonuses = item.bonuses ? JSON.parse(item.bonuses) : []
     },
