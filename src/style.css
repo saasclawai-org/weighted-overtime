@@ -43,6 +43,72 @@ h1 span { color: var(--primary); }
   margin-bottom: 24px;
 }
 
+/* Period toggle */
+.period-toggle {
+  display: flex;
+  gap: 0;
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 4px;
+  border: 1px solid var(--border);
+}
+
+.period-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-muted);
+  transition: all .15s;
+}
+
+.period-btn.active {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(79,70,229,.3);
+}
+
+.period-btn:not(.active):hover {
+  color: var(--text);
+  background: var(--border);
+}
+
+/* Week tabs */
+.week-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.week-tab {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--card);
+  color: var(--text-muted);
+  transition: all .15s;
+}
+
+.week-tab.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+  box-shadow: 0 1px 3px rgba(79,70,229,.3);
+}
+
+.week-tab:not(.active):hover {
+  border-color: var(--primary-light);
+  color: var(--text);
+}
+
 /* Cards */
 .card {
   background: var(--card);
@@ -259,6 +325,20 @@ input:focus, select:focus {
 .saved-name { font-weight: 600; font-size: 0.95rem; }
 .saved-date { font-size: 0.8rem; color: var(--text-muted); }
 .saved-total { font-weight: 700; color: var(--success); font-size: 1rem; font-variant-numeric: tabular-nums; }
+
+.saved-period-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  width: fit-content;
+  margin-top: 2px;
+}
 
 .empty-state {
   text-align: center;
