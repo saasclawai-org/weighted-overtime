@@ -49,6 +49,46 @@
       ]
     }
     </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is weighted overtime required by law?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "For non-exempt U.S. employees covered by the FLSA, overtime must be calculated on a regular rate that reflects all rates earned in the workweek. When rates vary, that regular rate is a weighted average. Some states add daily or seventh-day overtime rules (for example California); the regular-rate math still applies."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do bonuses, commissions, or shift differentials count toward the regular rate?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Non-discretionary bonuses, commissions, and shift differentials must be included in the regular rate before computing the overtime premium. Discretionary bonuses are excluded. Tips are generally excluded from the regular rate for overtime purposes, though they count toward minimum wage obligations."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between weighted, blended, and average overtime?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Nothing — weighted overtime, blended overtime, and weighted average overtime all refer to the same FLSA method of averaging multiple pay rates into one regular rate before applying the overtime premium."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does weighted overtime work for bi-weekly payroll?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The FLSA overtime threshold is per workweek, so the blend is computed weekly even when pay is issued bi-weekly. This calculator supports both pay periods and handles minimum-wage adjustments for sub-minimum rates."
+          }
+        }
+      ]
+    }
+    </script>
 
     <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -58,11 +98,55 @@
     <style>
       /* Critical CSS - hide app until Vue mounts */
       [v-cloak] { display: none; }
+      /* Static SEO content layer (2026-10-02) */
+      .wot-seo{font-family:Inter,-apple-system,'Segoe UI',Roboto,sans-serif;max-width:760px;margin:0 auto;padding:8px 20px 56px;color:#1e293b;line-height:1.65}
+      .wot-seo h2{font-size:1.35rem;margin:2rem 0 .5rem;font-weight:700}
+      .wot-seo h3{font-size:1.05rem;margin:1.25rem 0 .35rem;font-weight:600}
+      .wot-seo code{background:#f1f5f9;padding:2px 6px;border-radius:6px;font-size:.9em}
+      .wot-seo li{margin:.4rem 0}
+      .wot-note{font-size:.85rem;color:#64748b;margin-top:2rem}
     </style>
+    <script type="module" src="/src/main.js"></script>
   </head>
   <body>
     <div id="app" v-cloak></div>
-    <script type="module" src="/src/main.js"></script>
+
+    <!-- Static SEO content layer: readable without JavaScript (2026-10-02) -->
+    <div class="wot-seo">
+      <section>
+        <h2>How to Calculate Weighted Overtime (FLSA Blended Rate)</h2>
+        <p>When a non-exempt employee works <strong>two or more different pay rates</strong> in the same workweek, federal law (the FLSA) requires overtime to be paid on a <strong>blended regular rate</strong> — the weighted average of all rates earned that week — not simply 1.5× whichever rate the overtime hours happened to be worked at. The calculator above does the full computation, including bonuses, tips, and shift differentials. Here is the math behind it:</p>
+        <ol>
+          <li><strong>Add up straight-time pay</strong> for every hour worked at every rate (rate × hours, summed across all jobs and shifts).</li>
+          <li><strong>Divide by total hours worked</strong> to get the blended regular rate: <code>blended rate = (r1×h1 + r2×h2 + …) ÷ total hours</code></li>
+          <li><strong>Compute the overtime premium</strong> for hours over 40 in the workweek: <code>0.5 × blended rate × OT hours</code> — the half-time premium, because straight time is already paid for all hours worked.</li>
+          <li><strong>Total pay = straight-time pay + overtime premium.</strong></li>
+        </ol>
+      </section>
+      <section>
+        <h2>Worked Example: Two Pay Rates, 50-Hour Week</h2>
+        <p>An employee works 30 hours at <strong>$20/hr</strong> and 20 hours at <strong>$30/hr</strong> in the same workweek:</p>
+        <ul>
+          <li>Straight-time pay: (30 × $20) + (20 × $30) = $600 + $600 = <strong>$1,200.00</strong></li>
+          <li>Blended regular rate: $1,200 ÷ 50 hours = <strong>$24.00/hr</strong></li>
+          <li>Overtime premium: 10 OT hours × 0.5 × $24.00 = <strong>$120.00</strong></li>
+          <li><strong>Total gross pay: $1,320.00</strong></li>
+        </ul>
+        <p>Employers may alternatively use an agreement-based method that pays overtime hours at 1.5× the rate actually worked, but the weighted-average method above is the default FLSA approach (29 U.S.C. § 207; 29 C.F.R. Part 778).</p>
+      </section>
+      <section>
+        <h2>Frequently Asked Questions</h2>
+        <h3>Is weighted overtime required by law?</h3>
+        <p>For non-exempt U.S. employees covered by the FLSA, overtime must be calculated on a "regular rate" that reflects all rates earned in the workweek. When rates vary, that regular rate is a weighted average. Some states add daily or seventh-day overtime rules (for example California); the regular-rate math still applies.</p>
+        <h3>Do bonuses, commissions, or shift differentials count?</h3>
+        <p>Non-discretionary bonuses, commissions, and shift differentials must be included in the regular rate before computing the overtime premium. Discretionary bonuses are excluded. Tips are generally excluded from the regular rate for overtime purposes, though they count toward minimum wage obligations.</p>
+        <h3>Weighted vs. blended vs. average overtime — what's the difference?</h3>
+        <p>Nothing — "weighted overtime," "blended overtime," and "weighted average overtime" all describe the same FLSA method of averaging multiple pay rates into one regular rate before applying the overtime premium.</p>
+        <h3>Does this work for bi-weekly payroll?</h3>
+        <p>The FLSA overtime threshold is per workweek, so the blend is computed weekly even when pay is issued bi-weekly. This calculator supports both pay periods and handles minimum-wage adjustments for sub-minimum rates.</p>
+      </section>
+      <p class="wot-note">Estimates are for education and payroll planning, not legal advice. See the <a href="https://www.dol.gov/agencies/whd" rel="noopener">U.S. Department of Labor Wage and Hour Division</a> or consult an employment attorney for specific situations.</p>
+    </div>
 
     <!-- No-JS fallback -->
     <noscript>
