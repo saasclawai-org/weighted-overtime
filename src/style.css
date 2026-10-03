@@ -464,7 +464,15 @@ input:focus, select:focus {
 
 /* Responsive */
 @media (max-width: 600px) {
+  h1 { font-size: 1.35rem; }
+  .subtitle { font-size: 0.88rem; }
+  .app { padding: 16px 12px 64px; }
   .field-row { grid-template-columns: 1fr; }
-  .entry-row { grid-template-columns: 1fr 70px; }
+  .entry-row { grid-template-columns: 1fr 1fr; align-items: end; }
   .rate-fields { grid-template-columns: 1fr 1fr; }
+  .entry-row > *, .rate-fields > *, .field-row > * { min-width: 0; }
+  .entry-row input, .rate-fields input, .field-row input { width: 100%; min-width: 0; }
+  .breakdown-row .label { overflow-wrap: anywhere; }
+  .btn-row { flex-wrap: wrap; }
 }
+img, svg { max-width: 100%; }
